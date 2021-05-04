@@ -13,6 +13,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
+
 public class MainActivity extends AppCompatActivity {
 
     private Button bt1;
@@ -28,11 +34,13 @@ public class MainActivity extends AppCompatActivity {
 
         bt1 = findViewById(R.id.button);
         bt1.setOnClickListener(v -> {
-            System.out.println("Hola boto 1");
+            AsyncTaskRunnerText runner = new AsyncTaskRunnerText();
+            runner.execute();
         });
         bt2 = findViewById(R.id.button2);
         bt2.setOnClickListener(v -> {
-            System.out.println("Hola boto 2");
+            AsyncTaskRunnerImage runner = new AsyncTaskRunnerImage();
+            runner.execute();
         });
         tv = findViewById(R.id.textView);
         iv = findViewById(R.id.imageView);
@@ -62,12 +70,30 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(String... strings) {
+            HttpsURLConnection connection;
+            String url_string = "https://cv.udl.cat/portal";
+            try {
+                URL url = new URL(url_string);
+                connection = (HttpsURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setDoInput(true);
+                connection.connect();
+                BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                String tvContent = null;
+                while(br.readLine() != null) {
+                    tvContent += br.readLine();
+                }
+                return tvContent;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             return null;
         }
 
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
+            tv.setText(s);
         }
     }
 
@@ -82,5 +108,11 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Bitmap bitmap) {
             super.onPostExecute(bitmap);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        checkNetwork();
     }
 }

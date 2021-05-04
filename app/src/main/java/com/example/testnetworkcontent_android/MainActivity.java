@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -14,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 
@@ -101,12 +103,28 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Bitmap doInBackground(String... strings) {
+            Bitmap bitmap;
+            HttpsURLConnection connection;
+            String url_string = "https://s.inyourpocket.com/gallery/113383.jpg";
+            try {
+                URL url = new URL(url_string);
+                connection = (HttpsURLConnection) url.openConnection();
+                connection.setDoInput(true);
+                connection.connect();
+                InputStream inStream = connection.getInputStream();
+                bitmap = BitmapFactory.decodeStream(inStream);
+                inStream.close();
+                return bitmap;
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
             return null;
         }
 
         @Override
         protected void onPostExecute(Bitmap bitmap) {
             super.onPostExecute(bitmap);
+            iv.setImageBitmap(bitmap);
         }
     }
 
